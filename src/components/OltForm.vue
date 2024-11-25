@@ -7,6 +7,25 @@
           <h1 class="text-h4 green--text text--darken-2">OLT DATA FORM</h1>
         </div>
   
+        <!-- Alert Snackbar -->
+        <v-snackbar
+          v-model="snackbar.show"
+          :color="snackbar.color"
+          :timeout="3000"
+          top
+        >
+          {{ snackbar.text }}
+          <template v-slot:action="{ attrs }">
+            <v-btn
+              text
+              v-bind="attrs"
+              @click="snackbar.show = false"
+            >
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
+  
         <!-- Form -->
         <v-form @submit.prevent="submitForm" ref="form" v-model="valid">
           <v-tabs v-model="tab" background-color="#51b44b" dark>
@@ -48,7 +67,7 @@
                       label="Device IP"
                       outlined
                       dense
-                      :rules="[v => !!v || 'OLT ID is required' || v.length <= 30 || 'Max 30 characters']"
+                      :rules="[v => !!v || 'OLT ID is required', v => !v || v.length <= 30 || 'Max 30 characters']"
                     ></v-text-field>
                   </v-col>
   
@@ -260,7 +279,7 @@
   </template>
   
   <script>
- import axios from '@/plugins/axios'
+  import axios from '@/plugins/axios'
   
   export default {
     name: 'OltForm',
@@ -269,6 +288,11 @@
       valid: false,
       tab: 0,
       menu: false,
+      snackbar: {
+        show: false,
+        text: '',
+        color: ''
+      },
       form: {
         OLT_ID: null,
         DEV_IP: '',
@@ -295,7 +319,7 @@
       async submitForm() {
         if (this.$refs.form.validate()) {
           try {
-             await axios.post('/api/olt', this.form)
+            await axios.post('/api/olt', this.form)
             this.$refs.form.reset()
             this.showSuccessAlert()
           } catch (error) {
@@ -305,17 +329,15 @@
       },
   
       showSuccessAlert() {
-        this.$vuetify.theme.dark = false
-        this.$vuetify.alert.color = 'success'
-        this.$vuetify.alert.text = 'OLT data saved successfully!'
-        this.$vuetify.alert.show = true
+        this.snackbar.color = 'success'
+        this.snackbar.text = 'OLT data saved successfully!'
+        this.snackbar.show = true
       },
   
       showErrorAlert(error) {
-        this.$vuetify.theme.dark = false
-        this.$vuetify.alert.color = 'error'
-        this.$vuetify.alert.text = `Error: ${error.message}`
-        this.$vuetify.alert.show = true
+        this.snackbar.color = 'error'
+        this.snackbar.text = `Error: ${error.message}`
+        this.snackbar.show = true
       }
     }
   }
